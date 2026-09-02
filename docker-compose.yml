@@ -1,9 +1,8 @@
 services:
   web:
     build:
-      context: ./docker/apache
-      args:
-        GNUBOARD5_REF: ${GNUBOARD5_REF:-master}
+      context: .
+      dockerfile: docker/apache/Dockerfile
     ports:
       - "${WEB_PORT:-8080}:80"
     environment:

@@ -1,8 +1,8 @@
 # GNUBoard5 설치
 
 Docker Compose로 그누보드5(PHP + MariaDB)를 실행하기 위한 구성입니다.
-저장소 자체에는 그누보드5 소스코드를 포함하지 않으며, 이미지 빌드 시점에
-[gnuboard/g5](https://github.com/gnuboard/g5) 공식 저장소에서 소스를 내려받습니다.
+`www/` 디렉터리에 [gnuboard/gnuboard5](https://github.com/gnuboard/gnuboard5)
+공식 소스가 그대로 포함되어 있습니다.
 
 ## 요구 사항
 
@@ -44,7 +44,7 @@ Docker Compose로 그누보드5(PHP + MariaDB)를 실행하기 위한 구성입�
 - 업로드/설정 파일: `gnuboard5_data` 볼륨 (`/var/www/html/data`)
 - DB 데이터: `gnuboard5_db` 볼륨
 
-## 버전 고정
+## 소스 업데이트
 
-기본값은 `master` 브랜치입니다. 특정 태그로 고정하려면 `.env`의
-`GNUBOARD5_REF`를 원하는 태그명(예: `5.5.1`)으로 지정한 뒤 다시 빌드하세요.
+`www/` 디렉터리의 소스를 최신 버전으로 갱신하려면 `gnuboard/gnuboard5` 저장소의
+최신 내용을 받아 `www/`에 덮어쓴 뒤 다시 빌드하세요.

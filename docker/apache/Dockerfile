@@ -2,7 +2,6 @@ FROM php:8.1-apache
 
 # GNUBoard5 requires these PHP extensions and Apache mod_rewrite for clean URLs.
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        git \
         libfreetype6-dev \
         libjpeg62-turbo-dev \
         libpng-dev \
@@ -15,10 +14,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /var/www/html
 
-# Pull the official GNUBoard5 source at build time so the repository itself
-# never has to carry the upstream codebase.
-ARG GNUBOARD5_REF=master
-RUN git clone --depth 1 --branch "${GNUBOARD5_REF}" https://github.com/gnuboard/g5.git . \
-    && rm -rf .git
+# GNUBoard5 source is vendored under ./www in this repository.
+COPY www/ .
 
 RUN chown -R www-data:www-data /var/www/html
