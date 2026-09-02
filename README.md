@@ -33,15 +33,16 @@ Docker Compose로 그누보드5(PHP + MariaDB)를 실행하기 위한 구성입�
    - DB 호스트: `db`
    - DB 이름 / 사용자 / 비밀번호: `.env`의 `MYSQL_DATABASE` / `MYSQL_USER` / `MYSQL_PASSWORD`
 
-4. 설치가 끝나면 `/install` 디렉터리는 자동으로 잠깁니다. 완전히 제거하려면:
+4. 설치가 끝나면 `/install` 디렉터리를 반드시 제거하세요 (보안을 위해 자동으로
+   지워지지 않습니다):
 
    ```bash
-   docker compose exec web rm -rf /var/www/html/install
+   docker compose exec -u root web rm -rf /app/install
    ```
 
 ## 데이터 보존
 
-- 업로드/설정 파일: `gnuboard5_data` 볼륨 (`/var/www/html/data`)
+- 업로드/설정 파일: `gnuboard5_data` 볼륨 (`/app/data`)
 - DB 데이터: `gnuboard5_db` 볼륨
 
 ## 소스 업데이트

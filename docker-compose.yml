@@ -12,14 +12,14 @@ services:
       DB_USER: ${MYSQL_USER:-gnuboard5}
       DB_PASSWORD: ${MYSQL_PASSWORD:-changeme}
     volumes:
-      - gnuboard5_data:/var/www/html/data
+      - gnuboard5_data:/app/data
     depends_on:
       db:
         condition: service_healthy
     restart: unless-stopped
 
   db:
-    image: mariadb:10.11
+    image: mirror.gcr.io/library/mariadb:10.11
     environment:
       MYSQL_DATABASE: ${MYSQL_DATABASE:-gnuboard5}
       MYSQL_USER: ${MYSQL_USER:-gnuboard5}
@@ -28,7 +28,7 @@ services:
     volumes:
       - gnuboard5_db:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      test: ["CMD", "healthcheck.sh", "--connect"]
       interval: 5s
       timeout: 5s
       retries: 10
