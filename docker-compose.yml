@@ -1,0 +1,40 @@
+services:
+  web:
+    build:
+      context: ./docker/apache
+      args:
+        GNUBOARD5_REF: ${GNUBOARD5_REF:-master}
+    ports:
+      - "${WEB_PORT:-8080}:80"
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: ${MYSQL_DATABASE:-gnuboard5}
+      DB_USER: ${MYSQL_USER:-gnuboard5}
+      DB_PASSWORD: ${MYSQL_PASSWORD:-changeme}
+    volumes:
+      - gnuboard5_data:/var/www/html/data
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: mariadb:10.11
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-gnuboard5}
+      MYSQL_USER: ${MYSQL_USER:-gnuboard5}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-changeme}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-changeme_root}
+    volumes:
+      - gnuboard5_db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  gnuboard5_data:
+  gnuboard5_db:
