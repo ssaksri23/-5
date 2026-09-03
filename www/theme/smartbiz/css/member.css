@@ -1,0 +1,56 @@
+/* SmartBiz 테마 — 회원가입/로그인 등 그누보드5 코어 회원 화면(skin/member/basic)을
+   테마 색상에 맞춰 덧입히는 스타일. 코어 회원 스킨 PHP 파일은 건드리지 않고,
+   CSS만 얹어서 버튼/배너/테이블 색상을 브랜드 색상(--sb-main/--sb-sub)에 맞춘다.
+   회원가입, 로그인, 비밀번호 찾기, 쪽지, 포인트, 프로필 등 코어가 그리는 모든
+   회원 관련 페이지에 공통으로 적용된다. */
+
+/* 버튼 — 코어 기본은 파란색(#3a8afd) 고정, 테마 메인/보조색으로 교체 */
+.btn_submit,
+a.reg_btn_submit,
+a.reply_btn {
+    background: var(--sb-main, #1f3a68);
+    border-color: var(--sb-main, #1f3a68);
+    border-radius: 8px;
+}
+.btn_submit:hover,
+a.reg_btn_submit:hover,
+a.reply_btn:hover {
+    filter: brightness(1.08);
+}
+.btn_close,
+.btn_cancel {
+    border-radius: 8px;
+}
+
+/* 상단 안내 배너 (회원가입 약관 미동의 경고 등) */
+#fregister p,
+#member_cert_refresh p {
+    background: var(--sb-sub, #e8622c);
+    border-radius: 8px;
+}
+
+/* 링크, 강조 텍스트 */
+#fregister a:not(.btn_submit):not(.reg_btn_submit),
+#mb_login a {
+    color: var(--sb-main, #1f3a68);
+}
+
+/* 입력폼 */
+.frm_input {
+    border-radius: 6px;
+}
+.frm_input:focus {
+    outline: 2px solid var(--sb-main, #1f3a68);
+    outline-offset: -1px;
+}
+
+/* 약관/개인정보 표 헤더 */
+.fregister_terms table th,
+#member_cert_refresh_private table th {
+    background: color-mix(in srgb, var(--sb-main, #1f3a68) 8%, #f7f7f9);
+}
+
+/* 안내 메시지 박스(등록 완료, 오류 등) */
+.win_msg {
+    border-radius: 8px;
+}

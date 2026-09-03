@@ -44,6 +44,7 @@ add_javascript('<script src="'.G5_THEME_JS_URL.'/theme.js"></script>', 1);
 <?php if ($config['cf_add_meta']) echo $config['cf_add_meta'].PHP_EOL; ?>
 <title><?php echo get_text($tc['tc_seo_title'] ?: $g5_head_title); ?></title>
 <link rel="stylesheet" href="<?php echo get_versioned_asset_url(G5_THEME_CSS_URL.'/default.css'); ?>">
+<link rel="stylesheet" href="<?php echo get_versioned_asset_url(G5_THEME_CSS_URL.'/member.css'); ?>">
 <?php if ($tc['tc_color_main'] || $tc['tc_color_sub']) { ?>
 <style>
 :root{
