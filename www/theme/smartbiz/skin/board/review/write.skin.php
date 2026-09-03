@@ -24,7 +24,7 @@ add_stylesheet('<link rel="stylesheet" href="'.G5_THEME_CSS_URL.'/board.css">', 
     <p class="sb_form_notice">문의 내용은 <strong>비밀글</strong>로 등록되며, 작성자 본인과 관리자만 확인할 수 있습니다.</p>
     <?php } ?>
 
-    <form name="fwrite" id="fwrite" action="<?php echo $action_url; ?>" method="post" enctype="multipart/form-data" autocomplete="off">
+    <form name="fwrite" id="fwrite" action="<?php echo $action_url; ?>" method="post" enctype="multipart/form-data" autocomplete="off" onsubmit="return fwrite_submit(this);">
     <!-- bbs/write_update.php 가 매 게시글 저장 요청마다 무조건 check_write_token()을
          호출해 이 값을 세션과 대조한다(그누보드5 코어의 표준 게시판 CSRF 방어) -->
     <input type="hidden" name="token" value="<?php echo get_write_token($bo_table); ?>">
@@ -114,6 +114,15 @@ add_stylesheet('<link rel="stylesheet" href="'.G5_THEME_CSS_URL.'/board.css">', 
     </div>
     </form>
 </section>
-<?php echo $editor_js; ?>
-<?php echo $editor_content_js; ?>
-<?php echo $captcha_js; ?>
+<?php echo $editor_content_js; // 이미 <script src="...">로 감싸진 완결된 태그라 그대로 출력 ?>
+<script>
+// $editor_js / $captcha_js 는 core가 완결된 <script> 태그가 아니라 조각(raw) JS로
+// 반환한다 — onsubmit 핸들러 함수 안에 그대로 끼워 넣어 쓰라는 전제라, 태그 없이
+// 페이지에 그대로 echo하면 브라우저가 스크립트가 아니라 본문 텍스트로 렌더링해버린다.
+function fwrite_submit(f)
+{
+    <?php echo $editor_js; ?>
+    <?php echo $captcha_js; ?>
+    return true;
+}
+</script>
