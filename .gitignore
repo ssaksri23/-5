@@ -1,1 +1,4 @@
 .env
+
+# 판매용 테마 zip 빌드 산출물 (scripts/package-release.sh 로 재생성됨)
+/dist/
