@@ -48,7 +48,7 @@ WEB_PORT="$WEB_PORT_START"
 while ss -ltn 2>/dev/null | awk '{print $4}' | grep -q ":${WEB_PORT}\$"; do
     WEB_PORT=$((WEB_PORT + 1))
 done
-echo "    사용할 컨테이너 포트: ${WEB_PORT} (127.0.0.1에만 바인딩, 외부에는 열지 않음)"
+echo "    사용할 컨테이너 포트: ${WEB_PORT} (11-1단계에서 외부 직접 접근은 방화벽으로 차단됨)"
 
 echo "==> 2) 필수 패키지 설치 확인 (docker, docker compose, nginx, certbot)"
 if ! command -v docker >/dev/null 2>&1; then
@@ -83,16 +83,15 @@ fi
 # shellcheck disable=SC1091
 source .env
 
-echo "==> 4) 컨테이너를 127.0.0.1 에만 바인딩하도록 오버라이드 파일 생성"
-# 원본 docker-compose.yml 은 건드리지 않는다. 서버 전체 80 포트가 아니라
-# 로컬호스트의 지정 포트에만 바인딩해서, 외부에서는 반드시 Nginx(도메인 이름
-# 기반)를 거치도록 강제한다.
-cat > docker-compose.override.yml <<EOF
-services:
-  web:
-    ports:
-      - "127.0.0.1:${WEB_PORT}:80"
-EOF
+echo "==> 4) 컨테이너 포트 바인딩 확인"
+# docker-compose.yml 자체가 이미 "\${WEB_PORT:-8080}:80" 으로 포트를 발행하므로
+# (.env 의 WEB_PORT 값을 그대로 씀) 별도 오버라이드 파일이 필요 없다. 예전
+# 버전은 127.0.0.1 전용 바인딩을 위해 오버라이드 파일을 추가로 만들었는데,
+# Docker Compose는 여러 파일의 ports 목록을 "교체"가 아니라 "추가"로 합치기
+# 때문에 같은 호스트 포트를 두 번 바인딩하려다 "address already in use" 오류가
+# 났다. 원본 compose 파일 그대로 쓰고, 외부 노출은 아래 8단계의 방화벽 규칙으로
+# 막는다.
+rm -f docker-compose.override.yml
 
 echo "==> 5) 컨테이너 빌드 및 기동"
 docker compose up -d --build
@@ -190,6 +189,17 @@ if [ -n "${ADMIN_PASS:-}" ]; then
         --data-urlencode "apply_sample=1" --data-urlencode "sample_industry=${INDUSTRY}" \
         -o /tmp/smartbiz_wizard_result.html
     echo "    완료 (자세한 결과는 관리자 화면의 '테마 설정 → 설치 마법사'에서도 확인 가능)"
+fi
+
+echo "==> 11-1) 컨테이너 포트(${WEB_PORT}) 외부 직접 접근 차단 (Nginx를 통해서만 접속되게)"
+# 4단계에서 설명한 이유로 컨테이너 자체는 0.0.0.0(모든 인터페이스)에 바인딩된다.
+# ufw가 있으면 그 포트로의 외부 접근만 막아서, 반드시 Nginx(80/443, 도메인 이름
+# 기반)를 거치도록 한다. ufw가 없는 서버에서는 이 단계를 건너뛴다(치명적이지
+# 않음 — 방화벽 도구가 없다는 뜻이라 서버 전체가 이미 그런 정책일 가능성이 큼).
+if command -v ufw >/dev/null 2>&1; then
+    ufw deny "${WEB_PORT}/tcp" || true
+else
+    echo "    ufw가 설치되어 있지 않아 이 단계는 건너뜁니다."
 fi
 
 echo "==> 12) Nginx 사이트 설정 추가 (${DOMAIN} 전용 파일만 새로 생성, 기존 설정은 유지)"
