@@ -7,6 +7,15 @@
 // 이 상수가 정의되지 않으면 각각의 개별 페이지는 별도로 실행될 수 없음
 define('_GNUBOARD_', true);
 
+// 리버스 프록시(Nginx/Apache) 뒤에서 실행될 때 HTTPS 감지 보정.
+// 그누보드5 코어는 $_SERVER['HTTPS'] 값만으로 http/https를 판단하는데, 프록시가
+// 내부적으로 평문 HTTP로 이 컨테이너에 연결하면 이 값이 항상 비어있어 CSS/JS
+// 등 모든 링크가 http://로 생성되어 HTTPS 페이지에서 혼합 콘텐츠로 차단된다.
+// 프록시가 보내는 X-Forwarded-Proto 헤더를 신뢰해 보정한다(널리 쓰이는 관례).
+if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && strtolower($_SERVER['HTTP_X_FORWARDED_PROTO']) === 'https') {
+    $_SERVER['HTTPS'] = 'on';
+}
+
 include_once($g5_path['path'].'/version.php');   // 설정 파일
 
 // 기본 시간대 설정
