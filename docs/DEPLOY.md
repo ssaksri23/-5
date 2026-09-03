@@ -61,39 +61,65 @@ ssh root@129.121.127.196
 
 ---
 
-## 2단계 — GitHub 토큰 만들기 (비공개 저장소용)
+## 2단계 — 서버 전용 열쇠 만들기 (Deploy key)
 
-이 코드가 들어있는 GitHub 저장소가 비공개(private)라서, 서버에서 코드를
-받아오려면 "토큰"이라는 임시 비밀번호 같은 걸 하나 만들어야 합니다.
-**웹 브라우저**에서 진행합니다 (서버 터미널이 아님).
+이 코드가 들어있는 GitHub 저장소가 비공개(private)라서, 서버가 코드를
+받아오려면 "이 서버만" 그 저장소를 읽을 수 있는 열쇠(SSH 키)를 하나
+등록해야 합니다. (개인 계정 전체에 접근하는 토큰보다 이 방식이 더
+안전해서 이걸로 안내합니다.) **서버 터미널**과 **웹 브라우저**를 번갈아
+씁니다.
 
-1. [github.com](https://github.com)에 로그인합니다.
-2. 오른쪽 위 내 프로필 사진 클릭 → **Settings** 클릭.
-3. 왼쪽 메뉴 맨 아래 **Developer settings** 클릭.
-4. 왼쪽 메뉴에서 **Personal access tokens → Tokens (classic)** 클릭.
-5. **Generate new token → Generate new token (classic)** 클릭.
-6. Note(이름)에는 아무거나 알아볼 수 있는 이름 입력 (예: `smartbiz-deploy`).
-7. Expiration(만료 기간)은 `30 days` 정도로 선택.
-8. 권한 목록에서 **repo** 체크박스(맨 위 큰 항목)를 체크합니다.
-9. 맨 아래 **Generate token** 클릭.
-10. 화면에 `ghp_`로 시작하는 긴 문자열이 나옵니다. **이 화면을 벗어나면 다시
-    볼 수 없으니, 지금 바로 복사해서 메모장 등에 잠깐 붙여넣어 두세요.**
+1. **서버 터미널**(1단계에서 접속한 곳)에 아래를 입력해 열쇠 쌍을
+   만듭니다.
+
+   ```bash
+   ssh-keygen -t ed25519 -C "smartbiz-deploy" -f ~/.ssh/smartbiz_deploy_key -N ""
+   ```
+
+   (몇 가지 질문 없이 바로 만들어집니다.)
+
+2. 방금 만든 **공개키**를 화면에 출력합니다.
+
+   ```bash
+   cat ~/.ssh/smartbiz_deploy_key.pub
+   ```
+
+   `ssh-ed25519 AAAA...` 로 시작해서 `smartbiz-deploy`로 끝나는 한 줄이
+   나옵니다. **이 한 줄 전체를 마우스로 드래그해서 복사**하세요.
+
+3. **웹 브라우저**에서 저장소 페이지로 갑니다:
+   `https://github.com/ssaksri23/-5/settings/keys`
+   (또는 저장소 → **Settings** → 왼쪽 메뉴 **Security → Deploy keys**,
+   방금 스크린샷에 보이던 그 화면입니다.)
+
+4. **Add deploy key** 버튼 클릭.
+5. Title(이름)에 아무거나 입력 (예: `배포서버`).
+6. Key 입력칸에 2번에서 복사한 공개키 한 줄을 붙여넣기.
+7. **Allow write access는 체크하지 않습니다** (읽기 전용이면 충분합니다).
+8. **Add key** 클릭.
 
 ---
 
 ## 3단계 — 서버로 소스 코드 가져오기
 
-다시 1단계에서 접속해둔 **서버 터미널**로 돌아와서 입력합니다:
+다시 **서버 터미널**로 돌아와서, 먼저 GitHub의 신원 확인 질문에 대비해
+접속 테스트를 한 번 합니다.
 
 ```bash
-git clone --branch claude/gnuboard5-sellable-theme \
-  https://github.com/ssaksri23/-5.git /opt/smartbiz-gnuboard5
+ssh -T -i ~/.ssh/smartbiz_deploy_key -o IdentitiesOnly=yes git@github.com
 ```
 
-- `Username for 'https://github.com':` → 본인 GitHub 아이디 입력
-  (예: `ssaksri23`)
-- `Password for 'https://...':` → 방금 만든 토큰(`ghp_...`)을 붙여넣기.
-  역시 화면에 안 보입니다, 정상입니다.
+`Are you sure you want to continue connecting (yes/no)?` 가 뜨면 `yes`
+입력 후 Enter. `Hi ssaksri23/-5! You've successfully authenticated...`
+같은 메시지가 뜨면 성공입니다 (에러처럼 보이지만 정상 메시지입니다).
+
+이제 코드를 받아옵니다:
+
+```bash
+GIT_SSH_COMMAND="ssh -i ~/.ssh/smartbiz_deploy_key -o IdentitiesOnly=yes" \
+  git clone --branch claude/gnuboard5-sellable-theme \
+  git@github.com:ssaksri23/-5.git /opt/smartbiz-gnuboard5
+```
 
 완료되면 이어서:
 
@@ -209,9 +235,11 @@ DNS 연결이 끝났는데 4단계에서 SSL 발급이 실패했었다면, 이�
 - **비밀번호를 입력해도 반응이 없어요**: SSH/git에서 비밀번호나 토큰을
   입력할 때는 원래 화면에 아무 표시도 안 됩니다(보안 기능). 그냥 끝까지
   입력하고 Enter를 누르면 됩니다.
-- **git clone에서 `Authentication failed`가 떠요**: 2단계에서 만든 토큰을
-  다시 확인해보세요. 비밀번호 자리에 GitHub 계정 비밀번호가 아니라
-  `ghp_`로 시작하는 토큰을 입력해야 합니다.
+- **git clone에서 `Permission denied (publickey)` 가 떠요**: 2단계의
+  Deploy key가 제대로 등록됐는지, `cat ~/.ssh/smartbiz_deploy_key.pub`로
+  나온 내용과 GitHub에 등록한 키가 정확히 같은지 확인하세요. 그리고
+  `git clone` 명령어 앞의 `GIT_SSH_COMMAND="ssh -i ~/.ssh/smartbiz_deploy_key ..."`
+  부분을 빠뜨리지 않았는지도 확인하세요.
 - **도메인 접속이 안 돼요**: `dig +short 도메인주소`로 A레코드가
   `129.121.127.196`을 가리키는지, DNS 전파가 끝났는지 먼저 확인하세요.
 - **SSL 발급이 실패해요**: 인증서 발급 전에 반드시 도메인이 그 서버 IP로
