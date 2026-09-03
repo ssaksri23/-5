@@ -1,0 +1,10 @@
+# 리버스 프록시(Nginx/Apache) 뒤에서 실행될 때 HTTPS 여부를 정확히 인식하기 위한 설정.
+#
+# 그누보드5는 요청 최초 진입 시점(common.php의 g5_path() 함수, config.php보다도
+# 먼저 실행됨)에 $_SERVER['HTTPS'] 값으로 전체 사이트 URL의 http/https를
+# 한 번만 결정해서 굳혀버린다. 프록시가 내부적으로 평문 HTTP로 이 컨테이너에
+# 연결하면 이 값이 항상 비어있어, PHP 코드가 실행되기도 전에 이미 모든 링크가
+# http://로 굳어진다(그래서 config.php를 고치는 것만으로는 시점상 늦어 소용없다).
+# 프록시가 보내는 X-Forwarded-Proto 헤더를 Apache 레벨에서 신뢰해, PHP가 실행되기
+# 전에 HTTPS 환경변수를 미리 세팅해둔다(널리 쓰이는 관례).
+SetEnvIf X-Forwarded-Proto https HTTPS=on
