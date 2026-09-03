@@ -32,6 +32,8 @@ Docker Compose로 그누보드5(PHP + MariaDB)를 실행하기 위한 구성입�
 
    - DB 호스트: `db`
    - DB 이름 / 사용자 / 비밀번호: `.env`의 `MYSQL_DATABASE` / `MYSQL_USER` / `MYSQL_PASSWORD`
+   - "쇼핑몰설치" 체크박스는 기본으로 체크되어 있습니다 (가전제품 쇼핑몰 샘플
+     데이터를 쓰려면 체크된 상태로 진행하세요).
 
 4. 설치가 끝나면 `/install` 디렉터리를 반드시 제거하세요 (보안을 위해 자동으로
    지워지지 않습니다):
@@ -39,6 +41,23 @@ Docker Compose로 그누보드5(PHP + MariaDB)를 실행하기 위한 구성입�
    ```bash
    docker compose exec -u root web rm -rf /app/install
    ```
+
+## 가전제품 쇼핑몰 샘플 데이터
+
+설치가 끝난 뒤 아래 명령으로 가전 카테고리(냉장고/세탁기/TV/에어컨/주방가전/
+청소기/생활가전) 7개와 상품 21개를 채운 샘플 쇼핑몰을 바로 만들 수 있습니다:
+
+```bash
+docker compose exec -T db mysql -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE" \
+    < docker/seed/appliance_shop.sql
+```
+
+(`.env`를 안 쓰고 기본값 그대로면 `-ugnuboard5 -pchangeme gnuboard5`)
+
+`http://localhost:8080/shop/`에서 확인할 수 있습니다. 상품 이미지는 포함되어
+있지 않으니, 관리자 모드(`/adm` → 쇼핑몰관리 → 상품관리)에서 상품별로 이미지를
+업로드하세요. 상품/카테고리 내용은 `docker/seed/appliance_shop.sql`을 직접
+수정해서 원하는 대로 바꿀 수 있습니다.
 
 ## 데이터 보존
 
